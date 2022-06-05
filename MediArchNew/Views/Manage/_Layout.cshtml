@@ -1,0 +1,24 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+<div class="General_remake">
+    <div class="row_login">
+        <h2>Manage your account</h2>
+
+
+        <hr />
+        <div class="row_login">
+            <div class="col-md-3" style="width:50%">
+                @await Html.PartialAsync("_ManageNav")
+            </div>
+            <div class="col-md-9">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+</div>
+
+    @section Scripts {
+        @RenderSection("Scripts", required: false)
+    }
+

@@ -1,0 +1,139 @@
+﻿@model Data.Domain.Entities.Consult
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService consult_service
+@inject IMedicineService medicine_service
+
+@{
+    ViewData["Title"] = "Consult - Delete";
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <h3>Are you sure you want to delete this consult?</h3>
+
+    <div>
+
+        <div>
+            <div>
+                <p><b>Doctor:</b> @if (user_service.ApplicationUserExists(@Model.Doctor_Id.ToString()))
+                                  {
+                                      <a asp-action="Details" asp-controller="Account" asp-route-id="@Model.Doctor_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(Model.Doctor_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.Doctor_Id.ToString()).ToString()</a>
+                                  }
+                                  else
+                                  {
+                                      <h>Doctor not found </h>
+                                  }
+                </p>
+                <p>
+                    <b>Patient:</b> @if (user_service.ApplicationUserExists(@Model.Patient_Id.ToString()))
+                                    {
+                                        <a asp-action="Details" asp-controller="Account" asp-route-id="@Model.Patient_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(Model.Patient_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.Patient_Id.ToString()).ToString()</a>
+                                    }
+                                    else
+                                    {
+                                        <h>Patient not found</h>
+                                    }
+                </p>
+                <p><b>ConsultDate:</b><br />@Model.Created_Date</p>
+                <p><b>ConsultResult:</b><br />@foreach (var line in @Model.Result.Split("\n"))
+                {@line<br />}</p>
+
+                @if (Model.Prescription != null)
+                {
+                    <p><b>Prescription:</b><br />
+                        @if (@Model.Prescription.Split(",").Count() > 1)
+                        {
+                            @foreach (var med in @Model.Prescription.Split(","))
+                            {
+                                var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                                if (medicine != null)
+                                {
+                                    <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                                }
+                                else
+                                {
+                                    @med<br />
+                                }
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var med in @Model.Prescription.Split("\n"))
+                    {
+                        var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                        if (medicine != null)
+                        {
+                                    <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                                }
+                                else
+                                {
+                                    @med<br />
+                                }
+                            }
+                        }
+                </p>
+                }
+                @if (consult_service.GetNamesOfFiles(Model.Id).Count > 0)
+                {
+                <p>
+                    <b>Additional files:</b> @foreach (var file in consult_service.GetNamesOfFiles(Model.Id))
+                    {  <br>
+                        <input type="button" id="deletefile_@file" value="@file" class="button_download" />
+                    }
+                    <br>
+                    <br>
+                    <h4 class="Note_Red">Note: Click on any file to delete it!</h4>
+                </p>
+                }
+            </div>
+        </div>
+
+        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+        {
+            <div class="Centered">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="submit" value="Delete" class="button_remake" />
+                    
+                </form>
+                <br />
+                <a asp-action="Details" asp-route-id="@Model.Id">Details</a>
+                <a asp-action="Edit" asp-route-id="@Model.Id"> | Edit | </a>
+                <a asp-area="" asp-controller="Consults" asp-action="ConsultsPaginated">Back to List</a>
+            </div>
+        }
+    </div>
+</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('[id*=deletefile_]').click(function () {
+
+            var cnsId = $('[id=Id]').val();
+            var fName = this.id.substring(11);
+            var link = window.location.href;
+
+
+            $.ajax({
+                type: 'DELETE',
+                url: '/Consults/DeleteFile',//'@Url.Action("DeleteFile", "Consults")',//
+                data: { fileName: fName, consultId: cnsId},
+                success: function () {
+                    console.log(cnsId);
+                    console.log(fName);
+                }
+            }).done(function (data) {
+                console.log("done")
+                console.log(link)
+                location.replace(link);
+            });
+        });
+    });
+    </script>

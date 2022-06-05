@@ -1,0 +1,49 @@
+﻿@model Data.Domain.Entities.Medicine
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IMedicineService _service
+
+@{
+    ViewData["Title"] = "Medicine - Details";
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <div>
+        <p><b>@Html.DisplayNameFor(model => model.Name):</b><br /> <name>@Html.DisplayFor(model => model.Name)</name></p>
+        <p><b>Prospect:</b></p><br /> @if(Model.Prospect != null) {   foreach (var line in @Model.Prospect.Replace("\n\n","\n").Split("\n"))
+                                                                       {
+                                                                            <p class="left_alg">@line<br /></p>
+                                                                        }
+                                        }
+
+        @if (_service.GetNamesOfFiles(Model.Id).Count() > 0)
+        {
+            <p>
+                <b>Additional files:</b> @foreach (var file in _service.GetNamesOfFiles(Model.Id))
+                {
+                    using (Html.BeginForm("Download", "Medicines", new { medicineId = Model.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                    {
+                        if (file.Count(x=>x=='.') == 1 && (file.EndsWith(".jpg") || file.EndsWith(".png") || file.EndsWith(".jpeg") || file.EndsWith(".gif") || file.EndsWith(".svg")))
+                        {
+                            <button class="button_download width_20 no_bck"><img src="~/Medicines/@Model.Id/@file" class="download_btn_resize"></button>
+                        }
+                        else
+                        {
+                            <button class="button_download">@file</button>
+                        }
+                    }
+                }
+            </p>
+        }
+    </div>
+    <div>
+        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id">Edit |</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id">Delete |</a>
+        }
+        <a asp-action="Index">Back to List</a>
+    </div>
+</div>

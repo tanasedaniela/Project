@@ -1,0 +1,35 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace Data.Domain.ServiceInterfaces.Models.AnswerViewModels
+{
+    public class AnswerEditModel
+    {
+        public AnswerEditModel()
+        {
+            // EF
+        }
+        public Guid Id { get; set; }
+        [Required(ErrorMessage = "User Id is required.")]
+        public Guid UserId { get; set; }
+
+        [Required(ErrorMessage = "Question Id is required.")]
+        public Guid QuestionId { get; set; }
+
+        [DataType(DataType.DateTime)]
+        public DateTime AnswerDate = DateTime.Now;
+
+        [Required(ErrorMessage = "Answer Text is required.")]
+        [MinLength(1, ErrorMessage = "Answer must have at least 1 character.")]
+        [MaxLength(2000, ErrorMessage = "Answer cannot exceed 2000 characters.")]
+        public string Text { get; set; }
+
+        public AnswerEditModel(Guid id, Guid userId, Guid questionId, string text)
+        {
+            Id = id;
+            UserId = userId;
+            QuestionId = questionId;
+            Text = text;
+        }
+    }
+}

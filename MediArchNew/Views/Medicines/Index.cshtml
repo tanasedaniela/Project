@@ -1,0 +1,414 @@
+﻿@model IEnumerable<Data.Domain.Entities.Medicine>
+
+@{
+    ViewData["Title"] = "Medicines";
+}
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IMedicineService _service
+
+<br />
+@if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+{
+    <a asp-action="Create"><img src="~/images//Medicines.png" class="img_logos" title="Press here to add a new Medicine!"></a>
+}
+else
+{
+    <img src="~/images//Medicines.png" class="img_logos">
+    <br />
+}
+
+<div class="Centered">
+    <input class="seach_input" id="SearchByName" type="text" placeholder="Search.." />
+</div>
+
+<div class="talbe_remake">
+    <br />
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Prospect
+                </th>
+                <th>
+                    Additional Files:
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{int NoElement = 0; }
+            @foreach (var item in Model)
+            {
+                var tr_id = "Element_" + NoElement;
+                NoElement++;
+                var Model_No = "Modal_For_"+tr_id;
+                <tr id="@tr_id">
+                    <td>
+                        <div class="btn-group dropright">
+                            <a class="btn dropdown-toggle dropdown-toggle-split flt_right" data-toggle="dropdown"><b>@Html.DisplayFor(modelItem => item.Name) </b></a>
+                            <ul class="dropdown-menu special_dropright">
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Edit" asp-route-id="@item.Id">Edit</a></li>
+                                }
+
+                                <li><a asp-action="Details" asp-route-id="@item.Id">Details</a></li>
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Delete" asp-route-id="@item.Id">Delete</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        
+                        <p class="left_align"><a data-toggle="modal" data-target="#@Model_No" class="cursor_pointer"> @foreach (var line in @_service.Simplify(item.Prospect).Replace("\n\n", "\n").Split("\n"))
+                                                                                         {
+                                                                                             @line<br />
+                                                                                         }
+                                              </a>
+                        </p>
+                        <div class="modal fade" id="@Model_No" role="dialog">
+                            <div class="modal-dialog Centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Medicine : @item.Name</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <br />
+                                        <h2>Prospect:</h2>
+                                        <div class="left_align">
+                                            @foreach (var line in item.Prospect.Replace("\n\n", "\n").Split("\n"))
+                                            {
+                                                @line<br />
+                                            }
+                                        </div>
+                                        
+                                        <h3>Addition Files</h3>
+                                        @foreach (var file in _service.GetNamesOfFiles(item.Id))
+                                        {
+                                            using (Html.BeginForm("Download", "Medicines", new { medicineId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                                            {
+                                                if (file.Count(x => x == '.') == 1 && (file.EndsWith(".jpg") || file.EndsWith(".png") || file.EndsWith(".jpeg") || file.EndsWith(".gif") || file.EndsWith(".svg")))
+                                                {
+                                                    <button class="button_download width_40 no_bck"><img src="~/Medicines/@item.Id/@file" class="download_btn_resize"></button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="button_download">@file</button>
+                                                }
+                                            }
+                                        }
+                                        <br />
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </td>
+
+
+
+                    <td>
+                        @foreach (var file in _service.GetNamesOfFiles(item.Id))
+                        {
+                            using (Html.BeginForm("Download", "Medicines", new { medicineId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                            {
+                                if (file.Count(x => x == '.') == 1 && (file.EndsWith(".jpg") || file.EndsWith(".png") || file.EndsWith(".jpeg") || file.EndsWith(".gif") || file.EndsWith(".svg")))
+                                {
+                                    <button class="button_download width_40 no_bck"><img src="~/Medicines/@item.Id/@file" class="download_btn_resize"></button>
+                                }
+                                else
+                                {
+                                    <button class="button_download">@file</button>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+    
+<input type="hidden" id="CurrentIdPage" value="1" />
+
+@if (_service.GetNumberOfPagesForMedicines() > 1)
+{
+    <center>
+        <div id="Pages">
+            <input type="button" id="No_Page_<<" value="<<" class="Pagination_Button"/>
+            <input type="button" id="No_Page_<" value="<" class="Pagination_Button"/>
+            <b id="...1" class="Pagination_Button">...</b>
+            @for (int NrOfPage = 1; NrOfPage <= @_service.GetNumberOfPagesForMedicines(); NrOfPage++)
+            {
+                <input type="button" id="No_Page_@NrOfPage" value="@NrOfPage" class="Pagination_Button"/>
+            }
+            <b id="...2" class="Pagination_Button">...</b>
+            <input type="button" id="No_Page_>" value=">" class="Pagination_Button"/>
+            <input type="button" id="No_Page_>>" value=">>" class="Pagination_Button"/>
+        </div>
+    </center>
+}
+
+<div id="ResultForSearch">
+</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        /*setInterval(function () {
+            runSearchByCertainString();
+        }, 350);  // once every 350ms, re-run this sequence*/
+
+        SearchByName.addEventListener("input", function (e) {
+            runSearchByCertainString();
+        });
+
+        var currentlink = window.location.href;
+        var currentLinkSplit = currentlink.split('?');
+        var actualPageNo = 0;
+        if (currentLinkSplit.length == 1) {
+            actualPageNo = 1;
+        }
+        else {
+            actualPageNo = currentLinkSplit[1].split('=')[1];
+        }
+
+        var MaxPages =@_service.GetNumberOfPagesForMedicines();
+        if (MaxPages > 1) {
+
+            document.getElementById("...1").style.display = "none";
+
+            if (MaxPages <= 4) {
+                document.getElementById("...2").style.display = "none";
+                document.getElementById("No_Page_>>").style.display = "none";
+                document.getElementById("No_Page_<<").style.display = "none";
+            }
+            else {
+                for (var i = 4; i <= MaxPages; i++) {
+                    document.getElementById("No_Page_" + i).style.display = "none";
+                }
+            }
+
+            if (MaxPages > 4) {
+                if (parseInt(actualPageNo) >= 3) {
+                    document.getElementById("...1").style.display = "inline";
+                }
+                else {
+                    document.getElementById("...1").style.display = "none";
+                }
+
+                if (parseInt(actualPageNo) >= MaxPages - 1) {
+                    document.getElementById("...2").style.display = "none";
+                }
+                else {
+                    document.getElementById("...2").style.display = "inline";
+                }
+
+
+                if (actualPageNo != 1 && actualPageNo != MaxPages) {
+                    for (var i = 1; i <= MaxPages; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = parseInt(actualPageNo) - 1; i <= parseInt(actualPageNo) + 1; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+                }
+                else {
+                    if (actualPageNo == MaxPages) {
+                        for (var i = 1; i <= MaxPages; i++) {
+
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "none";
+                        }
+
+                        for (var i = MaxPages - 2; i <= MaxPages; i++) {
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "inline";
+                        }
+
+                    }
+                }
+            }
+        }
+
+        function runSearchByCertainString() {
+            var searchedText = $('#SearchByName').val();
+
+            if (!searchedText) {
+                searchedText = "null";
+            }
+
+            $.ajax({
+
+                type: "GET",
+                url: '@Url.Action("SearchForMedicines", "Medicines")',
+                contentType: "application/json; charset=utf-8",
+                data: { text: searchedText},
+                dataType: "json",
+                success: function (rez) {
+
+
+                    if (rez.length > 0) {
+                        var shouldReturn = '<div class=\"talbe_remake_red\"><br /><table class="table"><thead><tr><th class=\"red_th\">Name</th><th class=\"red_th\">Prospect</th></tr></thead><tbody>';
+                        for (i = 0; i < rez.length; i++) {
+                            var name = rez[i].name;
+
+                            var prospect = rez[i].prospect;
+
+                            if (!prospect) {
+                                prospect = "";
+
+                            }
+                            
+                            if (prospect != "") {
+                                if (prospect.length > 256) {
+                                    prospect = prospect.substring(0, 252)+" ...";
+
+                                }
+                            }
+
+
+                            shouldReturn = shouldReturn + "<tr><td>" + '<a href="/Medicines/Details/' + rez[i].id + '" title="For more information, press here!">' + name + '</a>' + "</td>" + "<td><p>" + prospect + "</p></td>"+"</tr>"
+                        }
+                        shouldReturn = shouldReturn + "</tbody></table></div>"
+
+                        $('#ResultForSearch').html(shouldReturn);
+                    }
+                    if (rez.length == 0 || searchedText == "" || searchedText==null) {
+                        $('#ResultForSearch').html("");
+                    }
+
+                }
+            });
+
+        }
+
+        var max = @_service.GetMaxNumberOfPAges();
+
+        for (var i = 5; i < max; i++) {
+            document.getElementById("Element_" + i).style.display = "none";
+        }
+
+        for (var i = 0; i < 5; i++) {
+            document.getElementById("Element_" + i).style.display = "table-row";
+        }
+
+        $(document).ready(function () {
+
+            $('[id*=No_Page_]').click(function () {
+
+                var pageNumber = this.id.substring(8);
+
+                if (pageNumber == "<<") {
+                    pageNumber = 1;
+
+                    for (var i = 1; i <=@_service.GetNumberOfPagesForMedicines();i++){
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = 1; i <=3;i++){
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+
+                }
+                if (pageNumber == ">>") {
+                    pageNumber =@_service.GetNumberOfPagesForMedicines();
+                    for (var i = 1; i <=pageNumber;i++){
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = pageNumber - 2; i <= pageNumber;i++){
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+                }
+
+                if (pageNumber == "<") {
+                    pageNumber = parseInt($('#CurrentIdPage').val().valueOf());
+                    pageNumber = pageNumber - 1;
+                    if (pageNumber < 1) {
+                        pageNumber = 1;
+
+                    }
+                }
+                if (pageNumber == ">") {
+                    pageNumber = parseInt($('#CurrentIdPage').val());
+                    pageNumber = pageNumber + 1;
+                    if (pageNumber >@_service.GetNumberOfPagesForMedicines()){
+                        pageNumber =@_service.GetNumberOfPagesForMedicines();
+
+                    }
+                }
+
+
+                var start = (pageNumber - 1) * 5;
+                var stop = start + 5;
+
+
+                if (stop > max) {
+                    stop = max;
+                }
+
+                for (var i = 0; i < max; i++) {
+                    document.getElementById("Element_" + i).style.display = "none";
+                }
+
+                for (var i = start; i < stop; i++) {
+                    document.getElementById("Element_" + i).style.display = "table-row";
+                }
+
+                document.getElementById("CurrentIdPage").value = pageNumber;
+
+                if (@_service.GetNumberOfPagesForMedicines()>4) {
+                    if (parseInt(pageNumber) >= 3) {
+                        document.getElementById("...1").style.display = "inline";
+                    }
+
+                    else {
+                        document.getElementById("...1").style.display = "none";
+
+                    }
+
+                    if (parseInt(pageNumber) >=@_service.GetNumberOfPagesForMedicines() -1) {
+                        document.getElementById("...2").style.display = "none";
+                    }
+                    else {
+                        document.getElementById("...2").style.display = "inline";
+                    }
+
+
+
+                    if (pageNumber != 1 && pageNumber !=@_service.GetNumberOfPagesForMedicines()){
+                        for (var i = 1; i <=@_service.GetNumberOfPagesForMedicines();i++) {
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "none";
+                        }
+
+                        for (var i = parseInt(pageNumber) - 1; i <= parseInt(pageNumber) + 1; i++) {
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "inline";
+                        }
+                    }
+                }
+            });
+        });
+
+    </script>

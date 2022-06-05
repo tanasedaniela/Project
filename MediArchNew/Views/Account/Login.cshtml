@@ -1,0 +1,53 @@
+﻿@model LoginViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+
+<div class="row_login">
+    <br/>
+    <h2>@ViewData["Title"]</h2>
+    <h3>Use your account to log in.</h3>
+    <div class="Login_labels">
+        <section>
+            <form asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+               
+                <hr />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Email"class="lable_remake"></label>
+                    <input asp-for="Email" class="input_remake" placeholder="Email"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Password" class="lable_remake"></label>
+                    <input asp-for="Password" class="input_remake"  placeholder="Password"/>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="forgot_remake">
+                    <div class="checkbox">
+                        <label asp-for="RememberMe">
+                            <input asp-for="RememberMe" />
+                            @Html.DisplayNameFor(m => m.RememberMe)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="button_remake">Log in</button>
+                </div>
+                <div class="forgot_remake">
+                    <p>
+                        <a asp-action="ForgotPassword">Forgot your password?</a>
+                    </p>
+                 
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,83 @@
+﻿@model Data.Domain.Interfaces.ServiceInterfaces.Models.MedicineViewModels.MedicineEditModel
+
+@{
+    ViewData["Title"] = "Medicine - Edit";
+}
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IMedicineService _service
+
+
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <br />
+    <div class="row_login">
+            <form multiple="multiple" runat="server" enctype="multipart/form-data" asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <b>Name:</b>
+                    <div class="Centered">
+                        <textarea asp-for="Name" class="textarea_remake width_70"></textarea>
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Prospect:</b>
+                    <div class="Centered">
+                        <textarea asp-for="Prospect" class="textarea_remake width_70 height_textAresEdit"></textarea>
+                    </div>
+                    <span asp-validation-for="Prospect" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Aditional files:</b>
+                    <br />
+                    @foreach (var file in _service.GetNamesOfFiles(Model.Id))
+                    {
+                        if (file.Count(x => x == '.') == 1 && (file.EndsWith(".jpg") || file.EndsWith(".png") || file.EndsWith(".jpeg") || file.EndsWith(".gif") || file.EndsWith(".svg")))
+                        {   <p>
+                            @file:
+                            <img src="~/Medicines/@Model.Id/@file"class="width_70">
+                            </p>
+                        }
+                        else
+                        {
+                            <p>@file</p>
+                        }
+
+                        <br>
+                    }
+                    @if (_service.GetNamesOfFiles(Model.Id).Count() == 0)
+                    {
+                        <p class="Note_Red">NONE</p>
+
+                    }
+                </div>
+                <div class="form-group">
+                 <b>Add more files:</b>
+                    <input type="file" multiple="multiple" asp-for="File" class="input_remake width_30" />
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Save" class="button_remake" />
+                </div>
+            </form>
+    </div>
+
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id">Details |</a>
+        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+        {
+            <a asp-action="Delete"  asp-route-id="@Model.Id"> Delete |</a>
+        }
+        
+        <a asp-action="Index">Back to List</a>
+    </div>
+</div>
+
+
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }

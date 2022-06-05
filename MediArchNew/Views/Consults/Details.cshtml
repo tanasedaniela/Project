@@ -1,0 +1,112 @@
+﻿@model Data.Domain.Entities.Consult
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService file_service
+@inject IMedicineService medicine_service
+
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Consult - Details";
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <div>
+
+        <p><b>Doctor:</b> @if (user_service.ApplicationUserExists(@Model.Doctor_Id.ToString()))
+                            {
+                            <a asp-action="Details" asp-controller="Account" asp-route-id="@Model.Doctor_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(Model.Doctor_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.Doctor_Id.ToString()).ToString()</a>
+                            }
+                            else
+                            {
+                            <h>Doctor not found </h>
+                            }
+        </p>
+        <p>
+            <b>Patient:</b> @if (user_service.ApplicationUserExists(@Model.Patient_Id.ToString()))
+                            {
+                                <a asp-action="Details" asp-controller="Account" asp-route-id="@Model.Patient_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(Model.Patient_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.Patient_Id.ToString()).ToString()</a>
+                            }
+                            else
+                            {
+                                <h>Patient not found</h>
+                            }
+        </p>
+
+        <p><b>Consult's Date:</b><br />@Model.Created_Date</p>
+            @if (Model.Result != null)
+            {
+                <p><b>Result:</b><br />@foreach (var line in @Model.Result.Split("\n")) {@line<br />}</p>
+            }
+            @if (Model.Prescription != null)
+            {
+                <p><b>Prescription:</b><br />    
+                @if (@Model.Prescription.Split(",").Count() > 1)
+                {
+                    foreach (var med in @Model.Prescription.Split(","))
+                    {
+                        var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                        if (medicine != null)
+                        {
+                            <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                        }
+                        else
+                        {
+                            @med<br />
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var med in @Model.Prescription.Split("\n"))
+                    {
+                        var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                        if (medicine != null)
+                        {
+                            <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                        }
+                        else
+                        {
+                            @med<br />
+                        }
+                    }
+                }
+            </p>
+            }
+            @if (file_service.GetNamesOfFiles(Model.Id).Count != 0)
+            {
+            <p>
+                <b>Additional files:</b> @foreach (var file in file_service.GetNamesOfFiles(Model.Id))
+                {
+                    using (Html.BeginForm("Download", "Consults", new { consultId = Model.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                    {
+                        <button class="button_download">@file</button>
+                    }
+                    <br />
+                }
+            </p>
+            }
+    </div>
+    <div id="Options">
+        <br />
+        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+            <a asp-action="Delete" asp-route-id="@Model.Id"> | Delete | </a>
+            <a asp-area="" asp-controller="Consults" asp-action="ConsultsPaginated">Back to List</a>
+        }
+        @if (User.IsInRole("Medic"))
+        {
+            <a asp-area="" asp-controller="Consults" asp-action="MyConsultsPaginated" asp-route-id="@UserManager.GetUserId(User)" asp-route-NoPage="1">Back to List</a>
+        }
+        @if (User.IsInRole("Pacient"))
+        {
+            <a asp-area="" asp-controller="Consults" asp-action="MyResultsPaginated" asp-route-id="@UserManager.GetUserId(User)" asp-route-NoPage="1">Back to List</a>
+        }
+                
+    </div>
+</div>

@@ -1,0 +1,142 @@
+﻿<!--model Data.Domain.Entities.Consult-->
+@model Data.Domain.Interfaces.ServiceInterfaces.Models.ConsultViewModels.ConsultEditModel
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService file_service
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+@{
+    ViewData["Title"] = "Consult - Edit";
+}
+
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <br />
+    <div class="row_login">
+        <div class="Login_labels">
+            <form multiple="multiple" runat="server" enctype="multipart/form-data" asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <div class="btn-group dropright">
+                        <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split flt_right Font_Blue_25" data-toggle="dropdown"><b>Doctor's Id: </b></a>
+                        <ul class="dropdown-menu special_dropright">
+                        @if (user_service.ApplicationUserExists(@Model.MedicId.ToString()))
+                        {
+                            <li><a asp-action="Details" asp-controller="Account" asp-route-id="@Model.MedicId"><img src="@user_service.GetProfilePictureLink(Model.MedicId.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.MedicId.ToString()).ToString()</a></li>
+                        }
+                        else
+                        {
+                            <h>Doctor not found </h>
+                        }
+                        </ul>
+
+                    </div>
+                    <input asp-for="MedicId" class="input_remake" />
+                    <span asp-validation-for="MedicId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <div class="btn-group dropright">
+                        <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split flt_right Font_Blue_25" data-toggle="dropdown"><b>Patient's Id: </b></a>
+                        <ul class="dropdown-menu special_dropright">
+                            @if (user_service.ApplicationUserExists(@Model.PacientId.ToString()))
+                            {
+                                <li><a asp-action="Details" asp-controller="Account" asp-route-id="@Model.PacientId"><img src="@user_service.GetProfilePictureLink(Model.PacientId.ToString())" class="navbar_img"> @user_service.GetFullNameById(Model.PacientId.ToString()).ToString()</a></li>
+                            }
+                            else
+                            {
+                                <h>Patient not found</h>
+                            }
+                        </ul>
+
+                    </div>
+                    <input asp-for="PacientId" class="input_remake" />
+                    <span asp-validation-for="PacientId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Consult Date:</b>
+                    <input asp-for="ConsultDate" class="input_remake" />
+                    <span asp-validation-for="ConsultDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Result:</b>
+                    <input asp-for="ConsultResult" class="input_remake" />
+                    <span asp-validation-for="ConsultResult" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Prescription:</b>
+                    <input asp-for="Medicines" class="input_remake" />
+                    <span asp-validation-for="Medicines" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Consult's files:</b>
+                    <br />
+
+                    @foreach (var file in file_service.GetNamesOfFiles(Model.Id))
+                    {
+                        /*@Html.ActionLink(@file, "Download", "Consults", new { consultId = Model.Id, fileName = @file }, FormMethod.Post)
+                        using (Html.BeginForm("Download", "Consults", new { consultId = Model.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                        {
+                            <button>@file</button>
+                        }*/
+                        <!--<input type="button" id="file_@file" value="@file" />-->
+                    <p>@file</p>
+                        <br>
+}
+        </div>
+        <div class="form-group">
+            <b>Add more files:</b>
+            <input type="file" multiple="multiple" asp-for="File" class="input_remake" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Save" class="button_remake" />
+        </div>
+        </form>
+
+        </div>
+    </div>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.Id">Details |</a>
+            @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+            {
+                <a asp-action="Delete" asp-route-id="@Model.Id">Delete |</a>
+            }
+            <a asp-area="" asp-controller="Consults" asp-action="ConsultsPaginated">Back to List</a>
+        </div>
+</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('[id*=file_]').click(function () {
+
+                var cnsId = $('[id=Id]').val();
+                var fName = this.id.substring(5);
+                var link = window.location.href;
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/Consults/Download',
+                    data: { fileName: fName, consultId: cnsId },
+                    success: function () {
+                        console.log(cnsId);
+                        console.log(fName);
+                    }
+                }).done(function (data) {
+                    console.log("done")
+                    console.log(link)
+                    //location.replace(link);
+                });
+            });
+        });
+    </script>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }

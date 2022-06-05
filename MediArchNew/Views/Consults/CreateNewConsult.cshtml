@@ -1,0 +1,85 @@
+﻿@model Data.Domain.Interfaces.ServiceInterfaces.Models.ConsultViewModels.ConsultCreateModel
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService consult_service
+@{
+    ViewData["Title"] = "Create A New Consult";
+    var mid = TempData["MId"];
+    var pid = TempData["PId"];
+    ApplicationUser user = UserManager.Users.SingleOrDefault(x => x.Id == pid.ToString());
+}
+
+<div class="General_remake">
+    <br />
+    <h2>Create A New Consult</h2>
+    <h3>Patient: <a asp-action="Details" asp-controller="Account" asp-route-id="@pid.ToString()" class="font_24">@user.FirstName.Decrypt() @user.LastName.Decrypt() (@user.Email)</a></h3>
+   
+
+    <div class="btn-group">
+        <button type="button" class="btn_remake" data-toggle="dropdown">
+            You can download and complete a model<span class="glyphicon glyphicon-triangle-right resize_icon"></span>
+        </button>
+
+        <div class="dropdown-menu left_dropdown_buttons">
+            @foreach (var file in consult_service.GetNamesOfModels())
+            {
+                using (Html.BeginForm("DownloadModel", "Consults", new { fileName = @file }, FormMethod.Post, null, new { }))
+                {
+                    <button class="button_download">@file</button>
+                }
+            }
+        </div>
+    </div>
+
+
+   
+    <hr />
+
+    <div class="row_login">
+        <div class="Login_labels">
+            <form multiple="multiple" runat="server" enctype="multipart/form-data" asp-action="CreateNewConsult">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <input asp-for="MedicId" class="input_remake" value="@mid" type="hidden" />
+                    <span asp-validation-for="MedicId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input asp-for="PacientId" class="input_remake" value="@pid" type="hidden" />
+                    <span asp-validation-for="PacientId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Result:</b>
+                    <div class="Centered">
+                        <textarea asp-for="ConsultResult"  class="textarea_remake" required = "required"></textarea>
+                    </div>
+                    <span asp-validation-for="ConsultResult" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Prescription:</b>
+                    <div class="Centered">
+                        <textarea asp-for="Medicines" class="textarea_remake" required = "required"></textarea>
+                    </div>
+                    <span asp-validation-for="Medicines" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                   <b>Additional Files:</b>
+                    <input type="file" multiple="multiple" asp-for="File" class="input_remake" />
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Create" class="button_remake" />
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

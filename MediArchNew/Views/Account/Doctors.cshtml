@@ -1,0 +1,396 @@
+﻿@model IEnumerable<MediArch.Models.ApplicationUser>
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+
+@{
+    ViewData["Title"] = "Doctors";
+}
+<br />
+<img src="~/images//Doctors.png" class="img_logos">
+
+<div class="Centered">
+    <input id="SearchByName" type="text" class="seach_input" placeholder="Search..." />
+
+</div>
+
+<div class="talbe_remake">
+    <br />
+    <table class="table" id="UserTable">
+        <thead>
+            <tr>
+                <th>
+                    <p>@Html.DisplayNameFor(model => model.Email)</p>
+                </th>
+
+                <th>
+                    <p>Name</p>
+                </th>
+
+                <th>
+                    <p>Age</p>
+                </th>
+
+                <th>
+                    <p>Phone Number</p>
+                </th>
+
+                <th>
+                    <p>@Html.DisplayNameFor(model => model.Title)</p>
+                </th>
+
+                <th>
+                    <p>Cabinet Address</p>
+                </th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text_align_justify text_align_padding_25">
+                        <div class="btn-group dropright">
+                            <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split flt_right" data-toggle="dropdown">@item.Email.CollapseMail() </a>
+                            <ul class="dropdown-menu special_dropright">
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Edit" asp-route-id="@item.Id">Edit</a></li>
+                                }
+
+                                <li><a asp-action="Details" asp-route-id="@item.Id">Details</a></li>
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Delete" asp-route-id="@item.Id">Delete</a></li>
+                                }
+                            </ul>
+
+                        </div>
+
+                    </td>
+
+                    <td class="text_align_justify text_align_padding_45">
+                        <p class="no_Text_Wraping">
+                            <a data-toggle="modal" data-target="#@item.Id" class="cursor_pointer">
+                                <b><img src="@service.GetProfilePictureLink(item.Id.ToString())" class="navbar_img"> @Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)</b>
+                            </a>
+                        </p>
+                        <div class="modal fade" id="@item.Id" role="dialog">
+                            <div class="modal-dialog Centered width_65">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">About this user</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <br />
+                                        <div class="container">
+                                            <div class="row">
+                                                <div class="col-8 left_align_doctors_spec">
+                                                    <div class="details_Profile_Imagfe">
+                                                        <img src="@service.GetProfilePictureLink(item.Id)" class="profile_img radius_5 padding_top_0">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4 right_align_doctors_spec">
+                                                    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                    {
+                                                        <p><b>Role:</b> @service.DetermineUserRole(item.Id.ToString()).Replace("MEDIC", "Doctor").Replace("PACIENT", "Patient").Replace("MODERATOR", "Moderator").Replace("OWNER", "Owner")</p>
+                                                    }
+                                                    <p><b>Full name:</b> @Html.DisplayFor(model => item.FirstName) @Html.DisplayFor(model => item.LastName)</p>
+                                                    <p><b>@Html.DisplayNameFor(model => item.Email):</b> @Html.DisplayFor(model => item.Email)</p>
+                                                    <p><b>Age:</b> @service.GetAgeOfUser(item.Id)</p>
+                                                    <p><b>@Html.DisplayNameFor(model => item.BirthDate):</b> @Html.DisplayFor(model => item.BirthDate)</p>
+                                                    @if (service.DetermineUserRole(item.Id).ToLower() == "Medic".ToLower())
+                                                    {
+                                                        <p><b>@Html.DisplayNameFor(model => item.Title):</b> @Html.DisplayFor(model => item.Title)</p>
+                                                        <p><b>@Html.DisplayNameFor(model => item.CabinetAddress):</b> @Html.DisplayFor(model => item.CabinetAddress)</p>
+
+                                                    }
+                                                    @if (service.DetermineUserRole(item.Id).ToLower() != "pacient" || User.IsInRole("Owner") || User.IsInRole("Moderator") || User.IsInRole("Medic"))
+                                                    {
+                                                        <p><b>@Html.DisplayNameFor(model => item.PhoneNumber):</b> @Html.DisplayFor(model => item.PhoneNumber)</p>
+                                                    }
+                                                    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                    {
+                                                        <p><b>Status:</b> @item.ActiveAccount.ToString().Replace("True", "Active").Replace("False", "Inactive")</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <br />
+                                            <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                            <br />
+                                            <br />
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="tooltip_remake">
+                            @service.GetAgeOfUser(item.Id)
+                            <span class="tooltiptext_remake">Born in &nbsp;@item.BirthDate.Month/@item.BirthDate.Day/@item.BirthDate.Year</span>
+                        </div>
+                    </td>
+
+                    <td>
+                        <p>@Html.DisplayFor(modelItem => item.PhoneNumber)</p>
+                    </td>
+
+                    <td>
+                        <p>@Html.DisplayFor(modelItem => item.Title)</p>
+                    </td>
+
+                    <td>
+                        <p>@Html.DisplayFor(modelItem => item.CabinetAddress)</p>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<input type="hidden" id="CurrentIdPage" value="1" />
+@if (service.GetNumberOfPagesForDoctors() > 1)
+{
+    <div class="Centered">
+        <input type="button" id="No_Page_<<" value="<<" class="Pagination_Button"/>
+        <input type="button" id="No_Page_<" value="<" class="Pagination_Button"/>
+        <b id="...1" class="Pagination_Button">...</b>
+        @for (int NrOfPage = 1; NrOfPage <= @service.GetNumberOfPagesForDoctors(); NrOfPage++)
+        {
+            <input type="button" id="No_Page_@NrOfPage" value="@NrOfPage" class="Pagination_Button"/>
+        }
+        <b id="...2" class="Pagination_Button">...</b>
+        <input type="button" id="No_Page_>" value=">" class="Pagination_Button"/>
+        <input type="button" id="No_Page_>>" value=">>" class="Pagination_Button"/>
+    </div>
+}
+
+<div id="ResultForSearch">
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function () {
+
+    /*setInterval(function () {
+        runSearchByCertainString();
+    }, 350);  // once every 350ms, re-run this sequence
+    */
+
+    SearchByName.addEventListener("input", function (e) {
+        runSearchByCertainString();
+    });
+
+    var currentlink = window.location.href;
+    var currentLinkSplit = currentlink.split('?');
+    var actualPageNo = 0;
+    if (currentLinkSplit.length == 1) {
+        actualPageNo = 1;
+    }
+    else {
+        actualPageNo = currentLinkSplit[1].split('=')[1];
+    }
+
+    //console.log(actualPageNo);
+    document.getElementById("CurrentIdPage").value = actualPageNo;
+
+    var MaxPages =@service.GetNumberOfPagesForDoctors();
+    if (MaxPages > 1) {
+        document.getElementById("...1").style.display = "none";
+
+        if (MaxPages <= 4) {
+            document.getElementById("...2").style.display = "none";
+            document.getElementById("No_Page_>>").style.display = "none";
+            document.getElementById("No_Page_<<").style.display = "none";
+        }
+        else {
+            for (var i = 4; i <= MaxPages; i++) {
+                document.getElementById("No_Page_" + i).style.display = "none";
+            }
+        }
+
+        if (MaxPages > 4) {
+            if (parseInt(actualPageNo) >= 3) {
+                document.getElementById("...1").style.display = "inline";
+            }
+
+            else {
+                document.getElementById("...1").style.display = "none";
+
+            }
+
+            if (parseInt(actualPageNo) >= MaxPages - 1) {
+                document.getElementById("...2").style.display = "none";
+
+            }
+            else {
+                document.getElementById("...2").style.display = "inline";
+            }
+
+
+
+            if (actualPageNo != 1 && actualPageNo != MaxPages) {
+                for (var i = 1; i <= MaxPages; i++) {
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "none";
+                }
+
+                for (var i = parseInt(actualPageNo) - 1; i <= parseInt(actualPageNo) + 1; i++) {
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "inline";
+                }
+            }
+            else {
+                if (actualPageNo == MaxPages) {
+                    for (var i = 1; i <= MaxPages; i++) {
+
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = MaxPages - 2; i <= MaxPages; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+
+                }
+            }
+        }
+    }
+
+    function runSearchByCertainString() {
+
+        console.log("aaa")
+        var searchedText = $('#SearchByName').val();
+
+        if (!searchedText) {
+            searchedText = "null";
+        }
+
+        // console.log('"' + searchedText + '"');
+
+
+        $.ajax({
+
+            type: "GET",
+            url: '@Url.Action("SearchMedics", "Account")',
+            contentType: "application/json; charset=utf-8",
+            data: { text: searchedText},
+            dataType: "json",
+            success: function (rez) {
+
+
+                // console.log(rez.length);
+
+                //console.log(rez[0]);
+
+
+                if (rez.length > 0) {
+                    var shouldReturn = '<div class=\"talbe_remake_red\"><br><table class="table"><thead><tr><th>Name</th><th>Phone Number</th><th>Title</th><th>Cabinet Address</th></tr></thead><tbody>';
+                    for (i = 0; i < rez.length; i++) {
+                        //shouldReturn = shouldReturn + "<tr><td>" + rez[i].email + "</tr></td>"
+                        var name = rez[i].firstName + " " + rez[i].lastName;
+
+                        var cabinetAddress = rez[i].cabinetAddress;
+
+                        var title = rez[i].title;
+
+                        var phone = rez[i].phoneNumber;
+
+                        shouldReturn = shouldReturn + "<tr><td>" + '<a href="/Account/Details?id=' + rez[i].id + '"><b>' + name + '</b></a>' + "<td>" + phone + "</td>" + "<td>" + title + "</td>" + "</td>" + "<td>" + cabinetAddress + "</td>" + "</tr>"
+                    }
+                    shouldReturn = shouldReturn + "</tbody></table></div>"
+
+                    $('#ResultForSearch').html(shouldReturn);
+                }
+                if (rez.length == 0 || searchedText == "" || searchedText==null) {
+                    $('#ResultForSearch').html("");
+                }
+
+            }
+        });
+
+    }
+
+
+    $('[id*=No_Page_]').click(function () {
+
+        //var PgId = $('[id=Id]').val();
+        var pageNumber = this.id.substring(8);
+
+        if (pageNumber == "<<") {
+                pageNumber = 1;
+
+                for (var i = 1; i <=MaxPages;i++){
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "none";
+                }
+
+                for (var i = 1; i <=3;i++){
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "inline";
+                }
+
+            }
+
+            if (pageNumber == ">>") {
+                pageNumber =MaxPages;
+                for (var i = 1; i <=pageNumber;i++){
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "none";
+                }
+
+                for (var i = pageNumber - 2; i <= pageNumber;i++){
+                    var id_string = "No_Page_".concat(i);
+                    document.getElementById(id_string).style.display = "inline";
+                }
+            }
+
+            if (pageNumber == "<") {
+                pageNumber = parseInt($('#CurrentIdPage').val().valueOf());
+                pageNumber = pageNumber - 1;
+                if (pageNumber < 1) {
+                    pageNumber = 1;
+
+                }
+            }
+            if (pageNumber == ">") {
+                pageNumber = parseInt($('#CurrentIdPage').val());
+                pageNumber = pageNumber + 1;
+                if (pageNumber >MaxPages){
+                    pageNumber =MaxPages;
+
+                }
+            }
+
+        // console.log(pageNumber)
+
+        var currentlink = window.location.href;
+        var spl = currentlink.split("/");
+        //alert(spl[2])
+        var RedirectPage = 'https://'+spl[2]+'@Url.Action("Doctors", "Account")' + '?NoPage=' + pageNumber
+        // console.log(RedirectPage)
+
+        document.getElementById("CurrentIdPage").value = pageNumber;
+        $.ajax({
+            /* type: 'POST',
+                url: 'Users',
+                data: { noPage: pageNumber },
+                success: function (data) {
+                    console.log("Should redirect");
+                    console.log(pageNumber)
+                }*/
+        }).done(function (data) {
+            //console.log("done")
+            location.replace(RedirectPage);
+        });
+    });
+});
+
+</script>

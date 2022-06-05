@@ -1,0 +1,55 @@
+﻿@model Data.Domain.Interfaces.ServiceInterfaces.Models.ConsultViewModels.ConsultCreateModel
+
+@{
+    ViewData["Title"] = "Consult - Create";
+}
+
+<div class="General_remake">
+    <h2>@ViewData["Title"]</h2>
+
+    <hr />
+
+    <div class="row_login">
+        <div class="Login_labels">
+            <form multiple="multiple" runat="server" enctype="multipart/form-data" asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <b>Doctor's Id</b>
+                    <input asp-for="MedicId" class="input_remake" />
+                    <span asp-validation-for="MedicId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Patient's Id</b>
+                    <input asp-for="PacientId" class="input_remake" />
+                    <span asp-validation-for="PacientId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <b>Prescription</b>
+                    <input asp-for="Medicines" class="input_remake" />
+                    <span asp-validation-for="Medicines" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Consult Result</b>
+                    <input asp-for="ConsultResult" class="input_remake" />
+                    <span asp-validation-for="ConsultResult" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <b>Files</b>
+                    <input type="file" multiple="multiple" asp-for="File" class="input_remake" />
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="button_remake" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a asp-area="" asp-controller="Consults" asp-action="ConsultsPaginated">Back to List</a>
+    </div>
+</div>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }

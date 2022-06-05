@@ -1,0 +1,78 @@
+﻿@model MediArch.Models.ApplicationUser
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Account - Details";
+}
+
+
+    <div class="General_remake">
+        <br />
+        <h2>@ViewData["Title"]</h2>
+        <hr />
+
+        <div class="container">
+            <div class="row">
+                <div class="col-8 left_align_details_acc">
+                    <div class="details_Profile_Imagfe">
+                        <img src="@service.GetProfilePictureLink(Model.Id)" class="profile_img radius_5 padding_top_0">
+                    </div>
+                </div>
+                <div class="col-4 right_align_details_acc">
+                    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                    {
+                        <p><b>Role:</b> @service.DetermineUserRole(Model.Id.ToString()).Replace("MEDIC", "Doctor").Replace("PACIENT", "Patient").Replace("MODERATOR", "Moderator").Replace("OWNER", "Owner")</p>
+                    }
+                    <p><b>Full name:</b> @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</p>
+                    <p><b>@Html.DisplayNameFor(model => model.Email):</b> @Html.DisplayFor(model => model.Email)</p>
+                    <p><b>Age:</b> @service.GetAgeOfUser(Model.Id)</p>
+                    <p><b>@Html.DisplayNameFor(model => model.BirthDate):</b> @Html.DisplayFor(model => model.BirthDate)</p>
+                    @if (service.DetermineUserRole(Model.Id).ToLower() == "Medic".ToLower())
+                    {
+                        <p><b>@Html.DisplayNameFor(model => model.Title):</b> @Html.DisplayFor(model => model.Title)</p>
+                        <p><b>@Html.DisplayNameFor(model => model.CabinetAddress):</b> @Html.DisplayFor(model => model.CabinetAddress)</p>
+
+                    }
+                    @if (service.DetermineUserRole(Model.Id).ToLower() != "pacient" || User.IsInRole("Owner") || User.IsInRole("Moderator") || User.IsInRole("Medic"))
+                    {
+                        <p><b>@Html.DisplayNameFor(model => model.PhoneNumber):</b> @Html.DisplayFor(model => model.PhoneNumber)</p>
+                    }
+                    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                    {
+                        <p><b>Status:</b> @Model.ActiveAccount.ToString().Replace("True", "Active").Replace("False", "Inactive")</p>
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <br />
+                <br />
+                @if (User.IsInRole("Medic") && service.DetermineUserRole(Model.Id).ToLower() == "pacient")
+                {
+                    <a>@Html.ActionLink("Add Consult", "CreateNewConsult", "Consults", new { medicId = UserManager.GetUserId(User), pacientId = Model.Id }, null)</a>
+                }
+                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                        <a asp-action="SetActive" asp-route-id="@Model.Id"> | Set Active </a>
+                        <a asp-action="SetInactive" asp-route-id="@Model.Id"> | Set Inactive </a>
+                }
+                @if (User.IsInRole("Owner"))
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.Id"> | Delete </a>
+                }
+                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                {
+                    <a asp-action="Users">| Go back</a>
+                }
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+        

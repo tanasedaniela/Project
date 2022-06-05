@@ -1,0 +1,73 @@
+﻿@model IEnumerable<Data.Domain.Entities.Consult>
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService file_service
+@{
+    ViewData["Title"] = "MyResults";
+}
+
+<h2>MyResults</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Medic
+            </th>
+            <!--<th>
+                Pacient
+            </th>-->
+            <th>
+                Consult Date
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Prescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Result)
+            </th>
+            <th>
+                <p>Consult's files:</p>
+            </th>
+            <th>
+                <p>Operations</p>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Doctor_Id">@user_service.GetFullNameById(item.Doctor_Id.ToString())</a>
+            </td>
+            <!--<td>
+                <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Patient_Id">@user_service.GetFullNameById(item.Patient_Id.ToString())</a>
+            </td>-->
+            <td>
+                @Html.DisplayFor(modelItem => item.Created_Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Prescription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Result)
+            </td>
+            <td>
+                @foreach (var file in file_service.GetNamesOfFiles(item.Id))
+                {
+                    using (Html.BeginForm("Download", "Consults", new { consultId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                    {
+                        <button>@file</button>
+                    }
+                }
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

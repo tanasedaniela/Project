@@ -1,0 +1,81 @@
+﻿@model MediArch.Models.AccountViewModels.RegisterPacientViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row_login">
+    <br />
+    <h2>Register as a Patient!</h2>
+    <br />
+
+    <div class="General_remake">
+        <form asp-action="RegisterPacient">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="left_align_register">
+                <div class="row_login">
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="lable_remake"></label>
+                        <input asp-for="FirstName" class="input_remake" placeholder="First Name" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="LastName" class="lable_remake"></label>
+                        <input asp-for="LastName" class="input_remake" placeholder="Last Name" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Email" class="lable_remake">Your Email (Username)</label>
+                        <input asp-for="Email" class="input_remake" placeholder="Your Email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Password" class="lable_remake"></label>
+                        <input asp-for="Password" class="input_remake" placeholder="Password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword" class="lable_remake"></label>
+                        <input asp-for="ConfirmPassword" class="input_remake" placeholder="Confirm Password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="VerticalLine_Refister">
+            </div>
+            <div class="right_align_register">
+                <div class="row_login">
+                    <div class="form-group">
+                        <label asp-for="BirthDate" class="lable_remake"></label>
+                        <input type="date" asp-for="BirthDate" class="input_remake" />
+                        <span asp-validation-for="BirthDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber" class="lable_remake"></label>
+                        <input asp-for="PhoneNumber" class="input_remake" placeholder="Your Phone Number" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <br />
+                <div class="form-group">
+                    <input type="submit" value="Register" class="button_remake" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

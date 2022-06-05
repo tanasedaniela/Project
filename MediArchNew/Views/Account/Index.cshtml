@@ -1,0 +1,134 @@
+﻿@model IEnumerable<MediArch.Models.ApplicationUser>
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+
+@{
+    ViewData["Title"] = "Index";
+}
+<center>
+    <h2>Index</h2>
+</center>
+
+<table class="table" id="UserTable">
+    <thead>
+        <tr>
+            <th>
+                <center>
+                    <p>Role</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.Email)</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.FirstName)</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.LastName)</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.BirthDate)</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>Age</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.Title)</p>
+                </center>
+            </th>
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.CabinetAddress)</p>
+                </center>
+            </th>
+
+            <th>
+                <center>
+                    <p>@Html.DisplayNameFor(model => model.PhoneNumber)</p>
+                </center>
+            </th>
+
+            <th>
+                <center>
+                    <p>Operations</p>
+                </center>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- User 1, not 0-->
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <center>
+                        <p>@service.DetermineUserRole(item.Id).ToString().ToUpper()</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.Email)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.FirstName)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.LastName)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@item.BirthDate.Month/@item.BirthDate.Day/@item.BirthDate.Year</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@service.GetAgeOfUser(item.Id)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.Title)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.CabinetAddress)</p>
+                    </center>
+                </td>
+                <td>
+                    <center>
+                        <p>@Html.DisplayFor(modelItem => item.PhoneNumber)</p>
+                    </center>
+                </td>
+
+                <td>
+                    <center>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <br>
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <br>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </center>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>

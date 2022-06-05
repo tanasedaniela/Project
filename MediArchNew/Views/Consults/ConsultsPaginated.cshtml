@@ -1,0 +1,534 @@
+﻿@model IEnumerable<Data.Domain.Entities.Consult>
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService consult_service
+@inject IMedicineService medicine_service
+
+
+@{
+    ViewData["Title"] = "Consults";
+}
+
+<br />
+@if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+{
+    <a asp-action="Create"><img src="~/images//Heart.png" class="img_logos img_heart" title="Press here to add a new Consult! But you have to know the ID's of both Patient and Doctor!'"></a>
+}
+else
+{
+    <img src="~/images//Heart.png" class="img_logos img_heart">
+}
+
+
+<div class="talbe_remake">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Consult's Date
+                </th>
+
+                <th>
+                    Doctor
+                </th>
+
+                <th>
+                    Patient
+                </th>
+                <th>
+                    Result
+                </th>
+                <th>
+                    Prescription
+                </th>
+                <th>
+                    Files
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="btn-group dropright">
+                            <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split flt_right" data-toggle="dropdown">@Html.DisplayFor(modelItem => item.Created_Date) </a>
+                            <ul class="dropdown-menu special_dropright">
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Edit" asp-route-id="@item.Id">Edit</a></li>
+                                }
+
+                                <li><a asp-action="Details" asp-route-id="@item.Id">Details</a></li>
+                                @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                {
+                                    <li><a asp-action="Delete" asp-route-id="@item.Id">Delete</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </td>
+
+                    <td class="text_align_justify">
+                            @if (user_service.ApplicationUserExists(@item.Doctor_Id.ToString()))
+                            {
+                                ApplicationUser doctor = user_service.GetUserById(item.Doctor_Id.ToString());
+                                <p class="no_Text_Wraping">
+                                    <a data-toggle="modal" data-target="#@item.Id@doctor.Id" class="cursor_pointer">
+                                        <b><img src="@user_service.GetProfilePictureLink(doctor.Id.ToString())" class="navbar_img"> @Html.DisplayFor(modelItem => doctor.FirstName) @Html.DisplayFor(modelItem => doctor.LastName)</b>
+                                    </a>
+                                </p>
+                                <div class="modal fade" id="@item.Id@doctor.Id" role="dialog">
+                                    <div class="modal-dialog Centered width_65">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">About this user</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <br />
+                                                <div class="container">
+                                                    <div class="row">
+                                                        <div class="col-8 left_align_doctors_spec">
+                                                            <div class="details_Profile_Imagfe">
+                                                                <img src="@user_service.GetProfilePictureLink(doctor.Id)" class="profile_img radius_5 padding_top_0">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4 right_align_doctors_spec">
+                                                            @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                            {
+                                                                <p><b>Role:</b> @user_service.DetermineUserRole(doctor.Id.ToString()).Replace("MEDIC", "Doctor").Replace("PACIENT", "Patient").Replace("MODERATOR", "Moderator").Replace("OWNER", "Owner")</p>
+                                                            }
+                                                            <p><b>Full name:</b> @Html.DisplayFor(model => doctor.FirstName) @Html.DisplayFor(model => doctor.LastName)</p>
+                                                            <p><b>@Html.DisplayNameFor(model => doctor.Email):</b> @Html.DisplayFor(model => doctor.Email)</p>
+                                                            <p><b>Age:</b> @user_service.GetAgeOfUser(doctor.Id)</p>
+                                                            <p><b>@Html.DisplayNameFor(model => doctor.BirthDate):</b> @Html.DisplayFor(model => doctor.BirthDate)</p>
+                                                            @if (user_service.DetermineUserRole(doctor.Id).ToLower() == "Medic".ToLower())
+                                                            {
+                                                                <p><b>@Html.DisplayNameFor(model => doctor.Title):</b> @Html.DisplayFor(model => doctor.Title)</p>
+                                                                <p><b>@Html.DisplayNameFor(model => doctor.CabinetAddress):</b> @Html.DisplayFor(model => doctor.CabinetAddress)</p>
+
+                                                            }
+                                                            @if (user_service.DetermineUserRole(doctor.Id).ToLower() != "pacient" || User.IsInRole("Owner") || User.IsInRole("Moderator") || User.IsInRole("Medic"))
+                                                            {
+                                                                <p><b>@Html.DisplayNameFor(model => doctor.PhoneNumber):</b> @Html.DisplayFor(model => doctor.PhoneNumber)</p>
+                                                            }
+                                                            @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                            {
+                                                                <p><b>Status:</b> @doctor.ActiveAccount.ToString().Replace("True", "Active").Replace("False", "Inactive")</p>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Doctor_Id"><b>Details</b></a>
+                                                    <br />
+                                                    <br />
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Doctor not found</span>
+                            }
+                    </td>
+                    <td class="text_align_justify">
+                        @if (user_service.ApplicationUserExists(@item.Patient_Id.ToString()))
+                        {
+                            ApplicationUser patient = user_service.GetUserById(item.Patient_Id.ToString());
+                            <p class="no_Text_Wraping">
+                                <a data-toggle="modal" data-target="#@item.Id@patient.Id" class="cursor_pointer">
+                                    <b><img src="@user_service.GetProfilePictureLink(patient.Id.ToString())" class="navbar_img"> @Html.DisplayFor(modelItem => patient.FirstName) @Html.DisplayFor(modelItem => patient.LastName)</b>
+                                </a>
+                            </p>
+                            <div class="modal fade" id="@item.Id@patient.Id" role="dialog">
+                                <div class="modal-dialog Centered width_65">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">About this user</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <br />
+                                            <div class="container">
+                                                <div class="row">
+                                                    <div class="col-8 left_align_doctors_spec">
+                                                        <div class="details_Profile_Imagfe">
+                                                            <img src="@user_service.GetProfilePictureLink(patient.Id)" class="profile_img radius_5 padding_top_0">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4 right_align_doctors_spec">
+                                                        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                        {
+                                                            <p><b>Role:</b> @user_service.DetermineUserRole(patient.Id.ToString()).Replace("MEDIC", "Doctor").Replace("PACIENT", "Patient").Replace("MODERATOR", "Moderator").Replace("OWNER", "Owner")</p>
+                                                        }
+                                                        <p><b>Full name:</b> @Html.DisplayFor(model => patient.FirstName) @Html.DisplayFor(model => patient.LastName)</p>
+                                                        <p><b>@Html.DisplayNameFor(model => patient.Email):</b> @Html.DisplayFor(model => patient.Email)</p>
+                                                        <p><b>Age:</b> @user_service.GetAgeOfUser(patient.Id)</p>
+                                                        <p><b>@Html.DisplayNameFor(model => patient.BirthDate):</b> @Html.DisplayFor(model => patient.BirthDate)</p>
+                                                        @if (user_service.DetermineUserRole(patient.Id).ToLower() == "Medic".ToLower())
+                                                        {
+                                                            <p><b>@Html.DisplayNameFor(model => patient.Title):</b> @Html.DisplayFor(model => patient.Title)</p>
+                                                            <p><b>@Html.DisplayNameFor(model => patient.CabinetAddress):</b> @Html.DisplayFor(model => patient.CabinetAddress)</p>
+
+                                                        }
+                                                        @if (user_service.DetermineUserRole(patient.Id).ToLower() != "pacient" || User.IsInRole("Owner") || User.IsInRole("Moderator") || User.IsInRole("Medic"))
+                                                        {
+                                                            <p><b>@Html.DisplayNameFor(model => patient.PhoneNumber):</b> @Html.DisplayFor(model => patient.PhoneNumber)</p>
+                                                        }
+                                                        @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+                                                        {
+                                                            <p><b>Status:</b> @patient.ActiveAccount.ToString().Replace("True", "Active").Replace("False", "Inactive")</p>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <br />
+                                                <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Patient_Id"><b>Details</b></a>
+                                                <br />
+                                                <br />
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <span>Patient not found</span>
+                        }
+                    </td>
+                    <td>
+                        
+                        <p class="no_Text_Wraping">
+                            <a data-toggle="modal" data-target="#Consult_@item.Id" class="cursor_pointer">
+                                @foreach (var line in @item.Result.CollapseAnswerText().Split("\n"))
+                                { @line<br />}
+                            </a>
+                        </p>
+                        <div class="modal fade" id="Consult_@item.Id" role="dialog">
+                            <div class="modal-dialog Centered width_65">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Consult</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <br />
+                                        <div class="container">
+                                            <div class="row">
+                                                <p><b>Doctor:</b> @if (user_service.ApplicationUserExists(@item.Doctor_Id.ToString()))
+                                                                  {
+                                                                      <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Doctor_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(item.Doctor_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(item.Doctor_Id.ToString()).ToString()</a>
+                                                                  }
+                                                                  else
+                                                                  {
+                                                                      <h>Doctor not found </h>
+                                                                  }
+                                                </p>
+                                                <p>
+                                                    <b>Patient:</b> @if (user_service.ApplicationUserExists(@item.Patient_Id.ToString()))
+                                                                    {
+                                                                        <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Patient_Id" class="size_20_only"><img src="@user_service.GetProfilePictureLink(item.Patient_Id.ToString())" class="navbar_img"> @user_service.GetFullNameById(item.Patient_Id.ToString()).ToString()</a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <h>Patient not found</h>
+                                                                    }
+                                                </p>
+
+                                                <p><b>Consult's Date:</b><br />@item.Created_Date</p>
+                                                @if (item.Result != null)
+                                                {
+                                                    <p><b>Result:</b><br />@foreach (var line in @item.Result.Split("\n")) {@line<br />}</p>
+                                                }
+                                                @if (item.Prescription != null)
+                                                {
+                                                    <p><b>Prescription:</b><br />    
+                                                        @if (@item.Prescription.Split(",").Count() > 1)
+                                                        {
+                                                            foreach (var med in @item.Prescription.Split(","))
+                                                             {
+                                                                 var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                                                                 if (medicine != null)
+                                                                 {
+                                                                     <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     @med<br />
+                                                                 }
+                                                             }
+                                                        }
+                                                        else
+                                                        {
+                                                            foreach (var med in @item.Prescription.Split("\n"))
+                                                             {
+                                                                 var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                                                                 if (medicine != null)
+                                                                 {
+                                                                     <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_20_only">@med</a><br />
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     @med<br />
+                                                                 }
+                                                             }
+                                                        }
+                                                    </p>
+                                                }
+                                                @if (consult_service.GetNamesOfFiles(item.Id).Count != 0)
+                                                {
+                                                    <p>
+                                                        <b>Additional files:</b> @foreach (var file in consult_service.GetNamesOfFiles(item.Id))
+                                                                                 {
+                                                                                     using (Html.BeginForm("Download", "Consults", new { consultId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                                                                                     {
+                                                                                         <button class="button_download">@file</button>
+                                                                                     }
+                                                                                     <br />
+                                                                                 }
+                                                    </p>
+                                                }
+                                            </div>
+                                            <br />
+                                            <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                            <br />
+                                            <br />
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </td>
+                    <td>
+                       @if (@item.Prescription.Split(",").Count() > 1)
+                       {
+                        foreach (var med in @item.Prescription.Split(","))
+                        {
+                            var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                            if (medicine != null)
+                            {
+                                <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_16">@med</a><br />
+                            }
+                            else
+                            {
+                                @med<br />
+                            }
+                        }
+                       }
+                       else
+                       {
+                        foreach (var med in @item.Prescription.Split("\n"))
+                        {
+                            var medicine = medicine_service.GetMedicineByName(med.Split("(")[0]);
+                            if (medicine != null)
+                            {
+                                <a asp-action="Details" asp-controller="Medicines" asp-route-id="@medicine.Id" class="size_16">@med</a><br />
+                            }
+                            else
+                            {
+                                @med<br />
+                            }
+                        }
+                       }
+                    </td>
+                    <td>
+                        @foreach (var file in consult_service.GetNamesOfFiles(item.Id))
+                        {
+                            using (Html.BeginForm("Download", "Consults", new { consultId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                            {
+                                <button class="button_download">@file</button>
+                            }
+                        }
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+    <input type="hidden" id="CurrentIdPage" value="1" />
+
+    @if (consult_service.GetNumberOfPagesForConsults() > 1)
+    {
+        <div class="Centered">
+            <input type="button" id="No_Page_<<" value="<<" class="Pagination_Button"/>
+            <input type="button" id="No_Page_<" value="<" class="Pagination_Button"/>
+            <b id="...1" class="Pagination_Button">...</b>
+            @for (int NrOfPage = 1; NrOfPage <= @consult_service.GetNumberOfPagesForConsults(); NrOfPage++)
+            {
+                <input type="button" id="No_Page_@NrOfPage" value="@NrOfPage" class="Pagination_Button"/>
+            }
+            <b id="...2" class="Pagination_Button">...</b>
+            <input type="button" id="No_Page_>" value=">" class="Pagination_Button"/>
+            <input type="button" id="No_Page_>>" value=">>" class="Pagination_Button"/>
+        </div>
+    }
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            var currentlink = window.location.href;
+            var currentLinkSplit = currentlink.split('?');
+            var actualPageNo = 0;
+            if (currentLinkSplit.length == 1) {
+                actualPageNo = 1;
+            }
+            else {
+                actualPageNo = currentLinkSplit[1].split('=')[1];
+            }
+
+            //console.log(actualPageNo);
+            document.getElementById("CurrentIdPage").value = actualPageNo;
+
+             var MaxPages =@consult_service.GetNumberOfPagesForConsults();
+
+            if (MaxPages > 1) {
+                document.getElementById("...1").style.display = "none";
+
+                if (MaxPages <= 4) {
+                    document.getElementById("...2").style.display = "none";
+                    document.getElementById("No_Page_>>").style.display = "none";
+                    document.getElementById("No_Page_<<").style.display = "none";
+                }
+                else {
+                    for (var i = 4; i <= MaxPages; i++)
+                        document.getElementById("No_Page_" + i).style.display = "none";
+                }
+
+                if (MaxPages > 4) {
+                    if (parseInt(actualPageNo) >= 3) {
+                        document.getElementById("...1").style.display = "inline";
+                    }
+
+                    else {
+                        document.getElementById("...1").style.display = "none";
+
+                    }
+
+                    if (parseInt(actualPageNo) >= MaxPages - 1) {
+                        document.getElementById("...2").style.display = "none";
+
+                    }
+                    else {
+                        document.getElementById("...2").style.display = "inline";
+                    }
+
+
+
+                    if (actualPageNo != 1 && actualPageNo != MaxPages) {
+                        for (var i = 1; i <= MaxPages; i++) {
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "none";
+                        }
+
+                        for (var i = parseInt(actualPageNo) - 1; i <= parseInt(actualPageNo) + 1; i++) {
+                            var id_string = "No_Page_".concat(i);
+                            document.getElementById(id_string).style.display = "inline";
+                        }
+                    }
+                    else {
+                        if (actualPageNo == MaxPages) {
+                            for (var i = 1; i <= MaxPages; i++) {
+
+                                var id_string = "No_Page_".concat(i);
+                                document.getElementById(id_string).style.display = "none";
+                            }
+
+                            for (var i = MaxPages - 2; i <= MaxPages; i++) {
+                                var id_string = "No_Page_".concat(i);
+                                document.getElementById(id_string).style.display = "inline";
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            $('[id*=No_Page_]').click(function () {
+
+               // var PgId = $('[id=Id]').val();
+                var pageNumber = this.id.substring(8);
+                //console.log(pageNumber)
+                if (pageNumber == "<<") {
+                    pageNumber = 1;
+
+                    for (var i = 1; i <= MaxPages; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = 1; i <= 3; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+
+                }
+
+                if (pageNumber == ">>") {
+                    pageNumber = MaxPages;
+                    for (var i = 1; i <= pageNumber; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "none";
+                    }
+
+                    for (var i = pageNumber - 2; i <= pageNumber; i++) {
+                        var id_string = "No_Page_".concat(i);
+                        document.getElementById(id_string).style.display = "inline";
+                    }
+                }
+
+                if (pageNumber == "<") {
+                    pageNumber = parseInt($('#CurrentIdPage').val().valueOf());
+                    pageNumber = pageNumber - 1;
+                    if (pageNumber < 1) {
+                        pageNumber = 1;
+
+                    }
+                }
+                if (pageNumber == ">") {
+                    pageNumber = parseInt($('#CurrentIdPage').val());
+                    pageNumber = pageNumber + 1;
+                    if (pageNumber > MaxPages) {
+                        pageNumber = MaxPages;
+
+                    }
+                }
+
+                var currentlink = window.location.href;
+                var spl = currentlink.split("/");
+                //alert(spl[2])
+                var RedirectPage = 'https://'+spl[2]+'@Url.Action("ConsultsPaginated", "Consults")' + '?NoPage=' + pageNumber
+                //console.log(RedirectPage)
+
+                document.getElementById("CurrentIdPage").value = pageNumber;
+                $.ajax({
+                    /* type: 'POST',
+                     url: 'Users',
+                     data: { noPage: pageNumber },
+                     success: function (data) {
+                         console.log("Should redirect");
+                         console.log(pageNumber)
+                     }*/
+                }).done(function (data) {
+                   // console.log("done")
+                    location.replace(RedirectPage);
+                });
+            });
+        });
+
+        </script>

@@ -1,0 +1,52 @@
+﻿@model Data.Domain.ServiceInterfaces.Models.QuestionViewModels.QuestionEditModel
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Question - Edit";
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <br />
+    <div class="row_login">
+        <div class="Login_labels">
+
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <input asp-for="UserId" class="input_remake" type="hidden">
+                </div>
+
+                <div class="form-group">
+                    <input asp-for="CreatedDate" class="input_remake" type="hidden" />
+                </div>
+
+                <div class="form-group">
+                    <b>Text</b>
+                    <input asp-for="Text" class="input_remake" />
+                    <span asp-validation-for="Text" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Save" class="button_remake" />
+                </div>
+            </form>
+        </div>
+        @{string gui3 = Model.UserId.ToString(); }
+        @if (User.IsInRole("Moderator") || User.IsInRole("Owner") || gui3 == UserManager.GetUserId(User))
+        {
+            <div>
+                <a asp-action="Details" asp-route-id="@Model.Id">Details</a>
+            
+                    <a asp-action="Delete" asp-route-id="@Model.Id"> | Delete | </a>
+            
+                <a asp-action="QuestionsPaginated">Go back</a>
+            </div>
+        }
+    </div>
+</div>
+
+        @section Scripts {
+            @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+        }

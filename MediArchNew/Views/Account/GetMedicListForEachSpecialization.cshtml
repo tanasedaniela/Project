@@ -1,0 +1,103 @@
+﻿
+@{
+    ViewData["Title"] = "Doctors by Specialization";
+}
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+@{ 
+    List<string> listOfSpecizations = service.GetAllSpecializations();
+    var no = -1;
+    var item = "";
+    var half = listOfSpecizations.Count() / 2;
+    if (listOfSpecizations.Count() % 2 == 1)
+    {
+        half++;
+    }
+}
+
+
+<div class="General_remake">
+    <br />
+    <img src="~/images//Doctors.png" class="img_logos">
+    <br />
+
+    <b>Specializations:</b>
+    <br />
+    <br />
+
+
+    <div class="container">
+        <div class="col-6 left_align_doctors_spec">
+            @for (int i = 0; i < half; i++)
+            {
+                item = listOfSpecizations[i];
+                no++;
+                var NoModel = "NoModel" + no;
+
+
+                <p><a data-toggle="modal" data-target="#@NoModel" class="cursor_pointer">@item (@service.GetAllMedicsForCertainSpecialization(item).Count())</a></p>
+                <div class="modal fade" id="@NoModel" role="dialog">
+                    <div class="modal-dialog Centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Specialization: @item</h4>
+                            </div>
+                            <div class="modal-body">
+                                <br />
+                                <h3>Doctors:</h3>
+                                @foreach (ApplicationUser usr in service.GetAllMedicsForCertainSpecialization(@item))
+                                {
+                                    <p><a asp-action="Details" asp-controller="Account" asp-route-id="@usr.Id"><b><img src="@service.GetProfilePictureLink(usr.Id.ToString())" class="navbar_img"> @service.GetFullNameById(usr.Id.ToString()).ToString()</b> (@usr.Email)</a></p>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+            }
+        </div>
+        <div class="col-6 right_align_doctors_spec">
+            @for (int i = half; i < listOfSpecizations.Count(); i++)
+            {
+                item = listOfSpecizations[i];
+                no++;
+                var NoModel = "NoModel" + no;
+
+
+                <p><a data-toggle="modal" data-target="#@NoModel" class="cursor_pointer">@item (@service.GetAllMedicsForCertainSpecialization(item).Count())</a></p>
+        <!-- Modal -->
+                <div class="modal fade" id="@NoModel" role="dialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content Centered">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Specialization: @item</h4>
+                            </div>
+                            <div class="modal-body">
+                                <br />
+                                <h3>Doctors:</h3>
+                                @foreach (ApplicationUser usr in service.GetAllMedicsForCertainSpecialization(@item))
+                                {
+                                    <p><a asp-action="Details" asp-controller="Account" asp-route-id="@usr.Id"><b><img src="@service.GetProfilePictureLink(usr.Id.ToString())" class="navbar_img"> @service.GetFullNameById(usr.Id.ToString()).ToString()</b> (@usr.Email)</a></p>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+            }
+        </div>
+    </div>
+
+    </div>
+
+
+

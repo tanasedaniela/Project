@@ -1,0 +1,129 @@
+﻿@model IEnumerable<Data.Domain.Entities.Consult>
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService user_service
+
+@using Data.Domain.Interfaces.ServiceInterfaces
+@inject IConsultService file_service
+
+@{
+    ViewData["Title"] = "Index";
+}
+<center>
+    <h2>Index</h2>
+</center>
+@if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+{
+<p>
+    <center>
+        <a asp-action="Create">Create New</a>
+    </center>
+</p>
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <center>
+                    Medic
+                </center>
+            </th>
+            <th>
+                <center>
+                    Pacient
+                </center>
+            </th>
+            <th>
+                <center>
+                    ConsultDate
+                </center>
+            </th>
+            <th>
+                <center>
+                    @Html.DisplayNameFor(model => model.Prescription)
+                </center>
+            </th>
+            <th>
+                <center>
+                    @Html.DisplayNameFor(model => model.Result)
+                </center>
+            </th>
+            <th>
+                <p>Consult's files:</p>
+            </th>
+            @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+            {
+            <th>
+                <center>
+                    Operations
+                </center>
+            </th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                <center>
+                    @if (user_service.ApplicationUserExists(@item.Doctor_Id.ToString()))
+                    {
+                    <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Doctor_Id">@user_service.GetFullNameById(item.Doctor_Id.ToString())</a>
+                    }
+                    else
+                    {
+                        <p>This medic don't exist in our database anymore</p>
+                    }
+                </center>
+            </td>
+            <td>
+                <center>
+                    @if (user_service.ApplicationUserExists(@item.Patient_Id.ToString()))
+                    {
+                        <a asp-action="Details" asp-controller="Account" asp-route-id="@item.Patient_Id">@user_service.GetFullNameById(item.Patient_Id.ToString())</a>
+                    }
+                    else
+                    {
+                        <p>This medic don't exist in our database anymore</p>
+                    }
+                </center>
+            </td>
+            <td>
+                <center>
+                    @Html.DisplayFor(modelItem => item.Created_Date)
+                </center>
+            </td>
+            <td>
+                <center>
+                    @Html.DisplayFor(modelItem => item.Prescription)
+                </center>
+            </td>
+            <td>
+                <center>
+                    @Html.DisplayFor(modelItem => item.Result)
+                </center>
+            </td>
+            <td>
+                @foreach (var file in file_service.GetNamesOfFiles(item.Id))
+                {
+                    using (Html.BeginForm("Download", "Consults", new { consultId = item.Id, fileName = @file }, FormMethod.Post, null, new { }))
+                    {
+                        <button>@file</button>
+                    }
+                }
+            </td>
+
+            @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+            {
+            <td>
+                <center>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit |</a>
+                    <a asp-action="Details" asp-route-id="@item.Id"> Details </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">| Delete</a>
+                </center>
+            </td>
+            }
+        </tr>
+}
+    </tbody>
+</table>

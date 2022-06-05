@@ -1,0 +1,104 @@
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData.AddActivePage(ManageNavPages.Index);
+}
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+
+<div class="Centered">
+    <div class="General_remake">
+        @Html.Partial("_StatusMessage", Model.StatusMessage)
+
+        <div class="top_padding_15">
+            <form multiple="multiple" runat="server" enctype="multipart/form-data" method="post">
+                <div class="row">
+                    <div class="col-8 left_align_profile">
+                        <div class="row_login">
+                            <div class="Account_Profile_Pic">
+                                <div class="form-group">
+                                    <b>Role:</b>
+                                    <b>@service.DetermineUserRole(Model.Id)</b>
+                                </div>
+                                <div class="form-group">
+                                    <b>Current Profile Picture:</b>
+                                    <img src="@service.GetProfilePictureLink(Model.Id)" class="profile_img">
+                                </div>
+
+                                <div class="form-group">
+                                    <b>Choose a new Profile Picture</b>
+                                    <input type="file" multiple="multiple" asp-for="File" class="input_remake" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="VerticalLine">
+                    </div>
+                    <div class="col-4 right_align_profile">
+                        <div class="Labels_Extra_larger">
+                            <input type="hidden" asp-for="Id" />
+
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <div class="form-group text-center">
+                                <b>Username (Email):</b>
+                                <input asp-for="Username" class="input_remake" disabled />
+                            </div>
+
+                            <div class="form-group">
+
+                                <input asp-for="Email" class="input_remake" value="@Model.Email" disabled type="hidden" />
+                                <!--<button asp-action="SendVerificationEmail" class="btn btn-link">Send verification email</button>-->
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <b>Full Name:</b>
+                                <input class="input_remake" value="@Model.FirstName @Model.LastName" disabled />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <b>Phone Number:</b>
+                                <input asp-for="PhoneNumber" class="input_remake" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <b>Birth Date:</b>
+                                <input asp-for="BirthDate" class="input_remake" disabled />
+                                <span asp-validation-for="BirthDate" class="text-danger"></span>
+                            </div>
+
+                            @if (service.DetermineUserRole(Model.Id).ToUpper() == "MEDIC")
+                            {
+                                <div class="form-group text-center">
+                                    <b>Title</b>
+                                    <input asp-for="Title" class="input_remake" disabled />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group text-center">
+                                    <b>Cabinet Address</b>
+                                    <input asp-for="CabinetAddress" class="input_remake" />
+                                    <span asp-validation-for="CabinetAddress" class="text-danger"></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <br />
+                    <br />
+
+                    <button type="submit" class="button_remake">Save changes</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,44 @@
+﻿@model Data.Domain.Entities.Answer
+@inject UserManager<ApplicationUser> UserManager
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+
+@using Data.Domain.Interfaces
+@inject IQuestionService _questionService
+
+@{
+    ViewData["Title"] = "Answer - Details";
+}
+@{
+    string gui3 = Model.UserId.ToString();
+    string questionText = _questionService.GetQuestionById(Model.QuestionId).Text;
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <div>
+        <p><b>Created at:</b><br />@Html.DisplayFor(model => model.Created_Date)</p>
+        <p><b>By:</b><br />@if (service.ApplicationUserExists(@Model.UserId.ToString()))
+                           {
+                               <a class="size_20" asp-action="Details" asp-controller="Account" asp-route-id="@Model.UserId"><img src="@service.GetProfilePictureLink(Model.UserId.ToString())" class="navbar_img"> @service.GetFullNameById(Model.UserId.ToString()) [@service.DetermineUserRole(Model.UserId.ToString())]</a>
+                           }
+                           else
+                           {
+                               <span>Unknown</span>
+                           }
+        </p>
+        <p><b>Original Question:<br /></b> <a class="size_20" asp-action="Details" asp-controller="Questions" asp-route-id="@Model.QuestionId">@questionText</a></p>
+        <p><b>Answer:<br /></b> @Html.DisplayFor(model => model.Text)</p>
+        
+    </div>
+    <br />
+    <br />
+    @if (User.IsInRole("Moderator") || User.IsInRole("Owner") || gui3 == UserManager.GetUserId(User))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id"> | Delete | </a>
+    }
+    <a asp-controller="Questions" asp-action="QuestionsPaginated">Go back</a>
+</div>

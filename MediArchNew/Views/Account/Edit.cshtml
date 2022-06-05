@@ -1,0 +1,73 @@
+﻿@model MediArch.Models.ApplicationUserViewModels.ApplicationUserEditModel
+
+@{
+    ViewData["Title"] = "Account - Edit";
+}
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <div class="row_login">
+        <div class="Login_labels">
+            <form asp-action="Edit">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input type="hidden" asp-for="Id" />
+
+                <div class="form-group">
+                    <b>First Name:</b>
+                    <input asp-for="FirstName" class="input_remake" />
+                </div>
+
+                <div class="form-group">
+                    <b>Last Name:</b>
+                    <input asp-for="LastName" class="input_remake" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <b>Birth Date:</b>
+                    <input asp-for="BirthDate" class="input_remake" />
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <b>Title:</b>
+                    <input asp-for="Title" class="input_remake" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <b>Cabinet Adress:</b>
+                    <input asp-for="CabinetAddress" class="input_remake" />
+                    <span asp-validation-for="CabinetAddress" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <b>Phone Number:</b>
+                    <input asp-for="PhoneNumber" class="input_remake" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Save" class="button_remake" />
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    @if (User.IsInRole("Owner") || User.IsInRole("Moderator"))
+    {
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id">Details</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id"> | Delete | </a>
+        <a asp-action="Users">Go back</a>
+    </div>
+    }
+</div>
+
+    @section Scripts {
+        @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }

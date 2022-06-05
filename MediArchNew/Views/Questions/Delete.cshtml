@@ -1,0 +1,48 @@
+﻿@model Data.Domain.Entities.Question
+@inject UserManager<ApplicationUser> UserManager
+
+@using MediArch.Services.Interfaces
+@inject IApplicationUserService service
+
+@{
+    ViewData["Title"] = "Question - Delete";
+}
+
+<div class="General_remake">
+    <br />
+    <h2>@ViewData["Title"]</h2>
+
+    <h3>Are you sure you want to delete this Question?</h3>
+
+    <hr />
+
+    <div>
+        <p><b>Created at:</b><br /> @Html.DisplayFor(model => model.CreatedDate)</p>
+        <p><b>By:</b><br />@if (service.ApplicationUserExists(@Model.UserId.ToString()))
+                           {
+                               <a class="size_20" asp-action="Details" asp-controller="Account" asp-route-id="@Model.UserId"><img src="@service.GetProfilePictureLink(Model.UserId.ToString())" class="navbar_img"> @service.GetFullNameById(Model.UserId.ToString()) [@service.DetermineUserRole(Model.UserId.ToString())]</a>
+                           }
+                           else
+                           {
+                               <span>Unknown</span>
+                           }
+        </p>
+        <p><b>Question:<br /></b> @Html.DisplayFor(model => model.Text)</p>
+    </div>
+    <br>
+    @{string gui3 = Model.UserId.ToString(); }
+    @if (User.IsInRole("Moderator") || User.IsInRole("Owner") || gui3 == UserManager.GetUserId(User))
+    {
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+
+            <input type="submit" value="Delete" class="button_remake" />
+            <br />
+            <br />
+            <a asp-action="Details" asp-route-id="@Model.Id">Details</a>
+            <a asp-action="Edit" asp-route-id="@Model.Id"> | Edit | </a>
+            <a asp-action="QuestionsPaginated">Go back</a>
+
+        </form>
+    }
+</div>
